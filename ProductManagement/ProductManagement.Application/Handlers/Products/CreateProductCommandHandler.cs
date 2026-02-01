@@ -6,19 +6,10 @@ using ProductManagement.Domain.Entities;
 
 namespace ProductManagement.Application.Handlers.Products
 {
-    public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, ProductDto>
+    public class CreateProductCommandHandler(
+        IRepository<Product> repository,
+        ICacheService cacheService) : IRequestHandler<CreateProductCommand, ProductDto>
     {
-        private readonly IRepository<Product> _repository;
-        private readonly ICacheService _cacheService;
-
-        public CreateProductCommandHandler(
-            IRepository<Product> repository,
-            ICacheService cacheService)
-        {
-            _repository = repository;
-            _cacheService = cacheService;
-        }
-
         public async Task<ProductDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
             var product = new Product
@@ -30,11 +21,11 @@ namespace ProductManagement.Application.Handlers.Products
                 CreatedAt = DateTime.UtcNow
             };
 
-            await _repository.AddAsync(product);
-            await _repository.SaveChangesAsync();
+            await repository.AddAsync(product);
+            await repository.SaveChangesAsync();
 
             // Invalidate cache
-            await _cacheService.RemoveByPrefixAsync("products:");
+            await cacheService.RemoveByPrefixAsync("products:");
 
             return new ProductDto
             {

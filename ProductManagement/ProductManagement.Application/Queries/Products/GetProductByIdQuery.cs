@@ -3,13 +3,8 @@ using ProductManagement.Application.DTOs.Products;
 
 namespace ProductManagement.Application.Queries.Products
 {
-    public class GetProductByIdQuery : IRequest<ProductDto>
+    public class GetProductByIdQuery(int id) : IRequest<ProductDto>
     {
-        public int Id { get; set; }
-
-        public GetProductByIdQuery(int id)
-        {
-            Id = id;
-        }
+        public int Id { get; set; } = id;
     }
 }

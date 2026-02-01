@@ -2,13 +2,8 @@
 
 namespace ProductManagement.Application.Commands.Products
 {
-    public class DeleteProductCommand : IRequest<bool>
+    public class DeleteProductCommand(int id) : IRequest<bool>
     {
-        public int Id { get; set; }
-
-        public DeleteProductCommand(int id)
-        {
-            Id = id;
-        }
+        public int Id { get; set; } = id;
     }
 }

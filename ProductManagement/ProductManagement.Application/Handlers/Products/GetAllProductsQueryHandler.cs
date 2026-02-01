@@ -6,32 +6,23 @@ using ProductManagement.Domain.Entities;
 
 namespace ProductManagement.Application.Handlers.Products
 {
-    public class GetAllProductsQueryHandler : IRequestHandler<GetAllProductsQuery, IEnumerable<ProductDto>>
+    public class GetAllProductsQueryHandler(
+        IRepository<Product> repository,
+        ICacheService cacheService) : IRequestHandler<GetAllProductsQuery, IEnumerable<ProductDto>>
     {
-        private readonly IRepository<Product> _repository;
-        private readonly ICacheService _cacheService;
-
-        public GetAllProductsQueryHandler(
-            IRepository<Product> repository,
-            ICacheService cacheService)
-        {
-            _repository = repository;
-            _cacheService = cacheService;
-        }
-
         public async Task<IEnumerable<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
             const string cacheKey = "products:all";
 
             // Try to get from cache
-            var cachedProducts = await _cacheService.GetAsync<IEnumerable<ProductDto>>(cacheKey);
+            var cachedProducts = await cacheService.GetAsync<IEnumerable<ProductDto>>(cacheKey);
             if (cachedProducts != null)
             {
                 return cachedProducts;
             }
 
             // Get from database
-            var products = await _repository.GetAllAsync();
+            var products = await repository.GetAllAsync();
             var productDtos = products.Select(p => new ProductDto
             {
                 Id = p.Id,
@@ -44,7 +35,7 @@ namespace ProductManagement.Application.Handlers.Products
             }).ToList();
 
             // Cache for 5 minutes
-            await _cacheService.SetAsync(cacheKey, productDtos, TimeSpan.FromMinutes(5));
+            await cacheService.SetAsync(cacheKey, productDtos, TimeSpan.FromMinutes(5));
 
             return productDtos;
         }
