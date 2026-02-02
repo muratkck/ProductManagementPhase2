@@ -1,6 +1,7 @@
 ﻿using MediatR;
 using ProductManagement.Application.Commands.Products;
 using ProductManagement.Application.DTOs.Products;
+using ProductManagement.Application.Exceptions;
 using ProductManagement.Application.Interfaces;
 using ProductManagement.Domain.Entities;
 
@@ -12,7 +13,7 @@ namespace ProductManagement.Application.Handlers.Products
     {
         public async Task<ProductDto> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
-            var product = await repository.GetByIdAsync(request.Id) ?? throw new KeyNotFoundException($"Product with id {request.Id} not found");
+            var product = await repository.GetByIdAsync(request.Id) ?? throw new NotFoundException(nameof(Product), request.Id);
             product.Name = request.ProductDto.Name;
             product.Description = request.ProductDto.Description;
             product.Price = request.ProductDto.Price;

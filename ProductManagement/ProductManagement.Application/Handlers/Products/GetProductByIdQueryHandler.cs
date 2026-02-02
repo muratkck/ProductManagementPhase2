@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using ProductManagement.Application.DTOs.Products;
+using ProductManagement.Application.Exceptions;
 using ProductManagement.Application.Interfaces;
 using ProductManagement.Application.Queries.Products;
 using ProductManagement.Domain.Entities;
@@ -22,7 +23,7 @@ namespace ProductManagement.Application.Handlers.Products
             }
 
             // Get from database
-            var product = await repository.GetByIdAsync(request.Id) ?? throw new KeyNotFoundException($"Product with id {request.Id} not found");
+            var product = await repository.GetByIdAsync(request.Id) ?? throw new NotFoundException(nameof(Product), request.Id);
             var productDto = new ProductDto
             {
                 Id = product.Id,
