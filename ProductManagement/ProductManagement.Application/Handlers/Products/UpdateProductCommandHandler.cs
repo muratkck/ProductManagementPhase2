@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Commands.Products;
 using ProductManagement.Application.DTOs.Products;
 using ProductManagement.Application.Exceptions;
@@ -9,10 +10,13 @@ namespace ProductManagement.Application.Handlers.Products
 {
     public class UpdateProductCommandHandler(
         IRepository<Product> repository,
-        ICacheService cacheService) : IRequestHandler<UpdateProductCommand, ProductDto>
+        ICacheService cacheService,
+        ILogger<UpdateProductCommandHandler> logger) : IRequestHandler<UpdateProductCommand, ProductDto>
     {
         public async Task<ProductDto> Handle(UpdateProductCommand request, CancellationToken cancellationToken)
         {
+            logger.LogInformation("Updating product with ID: {Id}", request.Id);
+
             var product = await repository.GetByIdAsync(request.Id) ?? throw new NotFoundException(nameof(Product), request.Id);
             product.Name = request.ProductDto.Name;
             product.Description = request.ProductDto.Description;
@@ -25,6 +29,8 @@ namespace ProductManagement.Application.Handlers.Products
 
             // Invalidate cache
             await cacheService.RemoveByPrefixAsync("products:");
+
+            logger.LogInformation("Product updated successfully");
 
             return new ProductDto
             {

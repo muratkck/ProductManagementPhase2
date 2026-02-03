@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.DTOs.Products;
 using ProductManagement.Application.Interfaces;
 using ProductManagement.Application.Queries.Products;
@@ -8,16 +9,20 @@ namespace ProductManagement.Application.Handlers.Products
 {
     public class GetAllProductsQueryHandler(
         IRepository<Product> repository,
-        ICacheService cacheService) : IRequestHandler<GetAllProductsQuery, IEnumerable<ProductDto>>
+        ICacheService cacheService,
+        ILogger<GetAllProductsQueryHandler> logger) : IRequestHandler<GetAllProductsQuery, IEnumerable<ProductDto>>
     {
         public async Task<IEnumerable<ProductDto>> Handle(GetAllProductsQuery request, CancellationToken cancellationToken)
         {
+            logger.LogInformation("Retrieving all products");
+
             const string cacheKey = "products:all";
 
             // Try to get from cache
             var cachedProducts = await cacheService.GetAsync<IEnumerable<ProductDto>>(cacheKey);
             if (cachedProducts != null)
             {
+                logger.LogInformation("Products retrieved from cache");
                 return cachedProducts;
             }
 
@@ -36,6 +41,8 @@ namespace ProductManagement.Application.Handlers.Products
 
             // Cache for 5 minutes
             await cacheService.SetAsync(cacheKey, productDtos, TimeSpan.FromMinutes(5));
+
+            logger.LogInformation("Retrieved {Count} products", productDtos.Count);
 
             return productDtos;
         }

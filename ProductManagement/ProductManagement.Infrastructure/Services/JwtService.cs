@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using ProductManagement.Application.Interfaces;
 using ProductManagement.Domain.Entities;
@@ -8,10 +9,12 @@ using System.Text;
 
 namespace ProductManagement.Infrastructure.Services
 {
-    public class JwtService(IConfiguration configuration) : IJwtService
+    public class JwtService(IConfiguration configuration, ILogger<JwtService> logger) : IJwtService
     {
         public string GenerateToken(User user)
         {
+            logger.LogInformation("Generating JWT token for user: {Username}", user.Username);
+
             var jwtSettings = configuration.GetSection("Jwt");
 
             // GetValue yerine indexer kullanın
@@ -39,6 +42,8 @@ namespace ProductManagement.Infrastructure.Services
                 expires: DateTime.UtcNow.AddMinutes(expirationMinutes),
                 signingCredentials: credentials
             );
+
+            logger.LogInformation("JWT token generated successfully");
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }

@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.Extensions.Logging;
 using ProductManagement.Application.Commands.Products;
 using ProductManagement.Application.DTOs.Products;
 using ProductManagement.Application.Interfaces;
@@ -8,10 +9,13 @@ namespace ProductManagement.Application.Handlers.Products
 {
     public class CreateProductCommandHandler(
         IRepository<Product> repository,
-        ICacheService cacheService) : IRequestHandler<CreateProductCommand, ProductDto>
+        ICacheService cacheService,
+        ILogger<CreateProductCommandHandler> logger) : IRequestHandler<CreateProductCommand, ProductDto>
     {
         public async Task<ProductDto> Handle(CreateProductCommand request, CancellationToken cancellationToken)
         {
+            logger.LogInformation("Creating product with name: {Name}", request.ProductDto.Name);
+
             var product = new Product
             {
                 Name = request.ProductDto.Name,
@@ -26,6 +30,8 @@ namespace ProductManagement.Application.Handlers.Products
 
             // Invalidate cache
             await cacheService.RemoveByPrefixAsync("products:");
+
+            logger.LogInformation("Product created successfully with ID: {Id}", product.Id);
 
             return new ProductDto
             {
